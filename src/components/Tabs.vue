@@ -59,7 +59,7 @@ export default {
 
       this.tabs.push({
         name: tabName,
-        title: tabName,
+        title: this.$util.cutString(tabName),
         componentName: 'Status',
       });
 
