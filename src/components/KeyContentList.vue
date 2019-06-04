@@ -40,13 +40,7 @@
     </div>
 
     <!-- content table -->
-    <PaginationTable :data="listData" :filterValue="filterValue" filterKey="value">
-      <el-table-column
-        type="index"
-        label="ID"
-        sortable
-        width="150">
-      </el-table-column>
+    <EmitterPaginationTable :data="listData" :dataTotal="dataTotal" :pageSize="pageSize" filterKey="value">
       <el-table-column
         prop="value"
         resizable
@@ -55,55 +49,45 @@
         label="Value"
         >
       </el-table-column>
+    </EmitterPaginationTable>
 
-      <el-table-column
-        label="Operation"
-        >
-        <template slot="header" slot-scope="scope">
-          <input
-            class="el-input__inner key-detail-filter-value"
-            v-model="filterValue"
-            :placeholder="$t('message.key_to_search')"
-            />
-        </template>
-        <template slot-scope="scope">
-          <el-button type="text" @click="showEditDialog(scope.row)" icon="el-icon-edit" circle></el-button>
-          <el-button type="text" @click="deleteLine(scope.row)" icon="el-icon-delete" circle></el-button>
-        </template>
-      </el-table-column>
-
-    </PaginationTable>
   </div>
 </template>
 
 <script>
-import PaginationTable from '@/components/PaginationTable';
+import EmitterPaginationTable from '@/components/EmitterPaginationTable';
 
 export default {
   data() {
     return {
-      filterValue: '',
       dialogFormVisible: false,
       editDialog: false,
       listData: [], // {value: xxx}
       newLineItem: {},
       beforeEditItem: {},
       editLineItem: {},
+      pageSize: 10,
+      pageIndex: 1,
+      dataTotal: 0,
     };
   },
   props: ['redisKey', 'newKeyParams'],
-  components: {PaginationTable},
+  components: {EmitterPaginationTable},
   methods: {
     initShow() {
       const key = this.newKeyParams.keyName;
-      const client = this.$util.get('client');
 
       if (!key) {
         return;
       }
 
-      client.lrangeAsync([key, 0, -1]).then((reply) => {
-        console.log(reply);
+      this.initTotal(key);
+
+      const start = (this.pageIndex - 1) * this.pageSize;
+      const end   = start + this.pageSize - 1;
+
+      this.$util.get('client').lrangeAsync([key, start, end]).then((reply) => {
+        console.log('lrange', start, end, reply);
 
         const listData = [];
 
@@ -112,6 +96,15 @@ export default {
         }
 
         this.listData = listData;
+      });
+    },
+    changePageIndex(pageIndex) {
+      this.pageIndex = pageIndex;
+      this.initShow();
+    },
+    initTotal(key) {
+      this.$util.get('client').llenAsync(key).then((reply) => {
+        this.dataTotal = reply;
       });
     },
     showEditDialog(row) {
@@ -128,11 +121,11 @@ export default {
 
       console.log('editing...', before, after);
 
-      client.lremAsync(key, 1, before.value).then((reply) => {
-        console.log('lrem...', reply);
+      client.linsertAsync(key, 'BEFORE', before.value, after.value).then((reply) => {
+        console.log('linsert...', reply);
 
-        client.rpushAsync(key, after.value).then((reply) => {
-          console.log('rpush...', reply);
+        client.lremAsync(key, 1, before.value).then((reply) => {
+          console.log('lrem...', reply);
           this.initShow();
         });
       });
