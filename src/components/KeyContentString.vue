@@ -29,6 +29,7 @@
 <script>
 import unserialize from 'locutus/php/var/unserialize';
 import StringViewText from '@/components/StringViewText';
+import StringViewHex from '@/components/StringViewHex';
 import StringViewJson from '@/components/StringViewJson';
 import StringViewPhpUnserialize from '@/components/StringViewPhpUnserialize';
 
@@ -38,15 +39,17 @@ export default {
       selectedView: 'StringViewText',
       views: [
         { value: 'StringViewText', text: 'View As Text' },
+        { value: 'StringViewHex', text: 'View As Hex' },
         { value: 'StringViewJson', text: 'View As Json' },
         { value: 'StringViewPhpUnserialize', text: 'View As PHPUnserialize' },
       ],
       content: '',
+      contentBuffer: '',
       newKeyParamsReference: this.newKeyParams,
     };
   },
   props: ['redisKey', 'newKeyMode', 'newKeyParams'],
-  components: { StringViewText, StringViewJson, StringViewPhpUnserialize },
+  components: { StringViewText, StringViewJson, StringViewPhpUnserialize, StringViewHex },
   methods: {
     initShow() {
       if (this.newKeyMode) {
@@ -60,14 +63,18 @@ export default {
         return;
       }
 
-      client.getAsync(key).then((reply) => {
+
+      client.getAsync(new Buffer(key)).then((reply) => {
+        this.contentBuffer = reply;
+        const visibleContent = reply.toString('utf8');
+
         // character not visible
-        if (!this.$util.isVisible(reply)) {
-          this.content = this.$util.toUTF8(reply);
+        if (!this.$util.isVisible(visibleContent)) {
+          this.content = this.$util.hexAddX(reply.toString('hex'));
         }
 
         else {
-          this.content = reply;
+          this.content = visibleContent;
         }
       });
     },

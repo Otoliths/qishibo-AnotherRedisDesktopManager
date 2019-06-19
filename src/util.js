@@ -18,6 +18,14 @@ export default {
   toUTF8(string) {
     return encodeURI(string).replace(/%/g, '\\x').toLowerCase();
   },
+  hexAddX(string) {
+    let result = '';
+    for (let i = 0; i < string.length; i+=2) {
+      result += `\\x${string[i]}${string[i + 1]}`;
+    }
+
+    return result;
+  },
   cutString(string, maxLength = 20) {
     if (string.length <= maxLength) {
       return string;
