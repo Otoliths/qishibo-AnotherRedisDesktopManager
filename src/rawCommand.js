@@ -1,18 +1,16 @@
+const splitargs = require('splitargs');
+
 export default {
-  exec(vue, params) {
-    const client = vue.$util.get('client');
+  exec(client, params) {
+    // const client = vue.$util.get('client');
 
     if (!client) {
       alert('Redis Client Is Not Yet');
       return;
     }
 
-    params = params.trim().match(/(?:[^\s"]+|"[^"]*")+/g);
+    params = splitargs(params);
     const operation = params.shift();
-
-    params = params.map((val) => {
-      return val.replace(/^"|"$/g, '');
-    });
 
     console.log(operation, params);
 

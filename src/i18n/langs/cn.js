@@ -59,6 +59,7 @@ const cn = {
     import: '导入',
     export: '导出',
     open: '打开',
+    close: '关闭',
     open_new_tab: '新窗口打开',
     exact_search: '精确搜索',
     enter_to_exec: '输入Redis命令后，按Enter键执行，上下键切换历史',
@@ -75,6 +76,10 @@ const cn = {
     update_download_progress: '下载进度',
     update_downloaded: '更新下载完成，重启客户端生效',
     mac_not_support_auto_update: 'Mac暂时不支持自动更新，请手动下载后重新安装',
+    font_family: '字体选择',
+    font_faq_title: '字体设置说明',
+    font_faq: "1. 可以设置多个字体<br>2. 字体选择是有序的，建议首先选择英文字体，然后再选择中文字体<br>\
+    3. 某些异常情况无法加载系统字体列表时，可以手动输入已安装字体名称",
   },
 };
 

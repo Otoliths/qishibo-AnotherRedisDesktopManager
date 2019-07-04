@@ -1,12 +1,14 @@
 <template>
-  <el-container class="wrap-container">
+  <el-container class="wrap-container" :style="{'font-family': fontFamily}">
 
-    <el-aside class="aside-connection" :style="{position: 'relative', width: sideWidth + 'px'}">
-      <Aside></Aside>
+    <div class="aside-drag-container" :style="{width: sideWidth + 'px'}">
+      <el-aside class="aside-connection">
+        <Aside></Aside>
+      </el-aside>
       <div id="drag-resize-container">
         <div id="drag-resize-pointer"></div>
       </div>
-    </el-aside>
+    </div>
 
     <el-container>
       <el-header class="main-header">
@@ -37,22 +39,27 @@ export default {
   data() {
     return {
       sideWidth: 250,
+      fontFamily: 'Default Initial',
     };
+  },
+  created() {
+    this.$bus.$on('changeFont', () => {
+      this.initFont();
+    });
   },
   components: {Header, Aside, Command, Tabs, ScrollToTop, UpdateCheck},
   methods: {
     bindSideBarDrag() {
       const that = this;
-      const aside = document.querySelector('.aside-connection');
       const dragPointer = document.getElementById('drag-resize-pointer');
 
       function mousemove(e)
       {
         const mouseX = e.x;
+        const dragSideWidth = mouseX - 19;
 
-        if ((mouseX > 200) && (mouseX < 400)) {
-          const fixWidth = aside.offsetWidth - aside.clientWidth + 1;
-          that.sideWidth = mouseX + fixWidth;
+        if ((dragSideWidth > 200) && (dragSideWidth < 400)) {
+          that.sideWidth = dragSideWidth;
         }
       }
 
@@ -81,12 +88,17 @@ export default {
         }
       });
     },
+    initFont() {
+      const fontFamily = this.$storage.getSetting('fontFamily');
+      fontFamily && (this.fontFamily = fontFamily.join(','));
+    }
   },
   mounted() {
     setTimeout(() => {
       this.$bus.$emit('update-check');
     }, 2000);
 
+    this.initFont();
     this.bindSideBarDrag();
     this.openHrefInBrowser();
   },
@@ -105,11 +117,22 @@ body {
   box-sizing: border-box;
   /*font: caption;*/
 }
+
+button, input, textarea, .vjs__tree {
+  font-family: inherit !important;
+}
+
 .wrap-container {
   height: 100%;
 }
+.aside-drag-container {
+  position: relative;
+  user-select: none;
+}
 .aside-connection {
   height: 100%;
+  width: 100% !important;
+  border-right: 1px solid #e4e0e0;
 }
 .main-header.el-header {
   height: 42px !important;
@@ -118,17 +141,21 @@ body {
   height: 100%;
 }
 
+.el-message-box .el-message-box__message {
+  word-break: break-all;
+}
+
 #drag-resize-container {
   position: absolute;
   /*height: 100%;*/
   width: 10px;
-  right: 0px;
+  right: -5px;
   top: 0px;
 }
 #drag-resize-pointer {
   position: fixed;
   height: 100%;
-  width: 10px;
+  width: 18px;
   cursor: col-resize;
 }
 #drag-resize-pointer::after {
@@ -141,6 +168,7 @@ body {
 
   position: absolute;
   top: 0;
+  right: 0;
   bottom: 0;
   margin: auto;
 }

@@ -6,9 +6,9 @@
         <!-- connection item -->
         <template slot="title">
           <div class="connection-opt-icons">
-            <i :title="$t('message.refresh_connection')" class="el-icon-refresh" @click.stop.prevent="refreshConnection(item.menuIndex)"></i>
-            <i :title="$t('message.edit_connection')" class="el-icon-edit-outline" @click.stop.prevent="showEditConnection(item, item.menuIndex)"></i>
-            <i :title="$t('message.del_connection')" class="el-icon-delete" @click.stop.prevent="deleteConnection(item)"></i>
+            <i :title="$t('message.refresh_connection')" class="connection-right-icon el-icon-refresh" @click.stop.prevent="refreshConnection(item.menuIndex)"></i>
+            <i :title="$t('message.edit_connection')" class="connection-right-icon el-icon-edit-outline" @click.stop.prevent="showEditConnection(item, item.menuIndex)"></i>
+            <i :title="$t('message.del_connection')" class="connection-right-icon el-icon-delete" @click.stop.prevent="deleteConnection(item)"></i>
           </div>
           <div slot="title" :title="item.menuIndex" class="connection-name">{{item.menuIndex}}</div>
         </template>
@@ -18,7 +18,7 @@
             <el-row :gutter="6">
               <el-col :span="12">
                 <!-- db index select -->
-                <el-select class="db-select" v-model="selectedDbIndex[item.menuIndex]" placeholder="DB" size="mini" @change="changeDb(item.menuIndex)">
+                <el-select class="db-select" v-model="selectedDbIndex[item.menuIndex]" placeholder="DB" size="mini" @change="changeDb(item.menuIndex)" filterable default-first-option>
                   <el-option
                     v-for="index in dbs[item.menuIndex]"
                     :key="index"
@@ -31,7 +31,10 @@
 
               <el-col :span="12">
                 <!-- new key btn -->
-                <el-button class="new-key-btn el-icon-plus" @click="showNewKeyDialog(item.menuIndex)">{{ $t('message.add_new_key')}}</el-button>
+                <el-button class="new-key-btn" @click="showNewKeyDialog(item.menuIndex)">
+                  <i class="el-icon-plus"></i>
+                  {{ $t('message.add_new_key')}}
+                </el-button>
               </el-col>
             </el-row>
           </el-form-item>
@@ -431,6 +434,13 @@ export default {
 
       this.connectionPool = {};
       this.openedStatus = {};
+      this.selectedDbIndex = {};
+      this.searchMatch = {};
+      this.searchExact = {};
+      this.scanCursorList = {};
+      this.pageIndex = {};
+      this.nextPageDisabled = {};
+
       this.$bus.$emit('removeAllTab');
     },
     initMenuIndex(connection) {
@@ -733,14 +743,15 @@ export default {
   .connection-menu {
     margin-top: 10px;
     padding-right: 6px;
+    border-right: 0;
   }
   .connection-menu .connection-name {
     /*margin-right: 65px;*/
     padding-right: 6px;
-    word-break:keep-all;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
+    word-break: keep-all;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     font-weight: bold;
     font-size: 103%;
   }
@@ -748,6 +759,19 @@ export default {
     /*width: 30px;*/
     float: right;
     margin-right: 28px;
+  }
+  .connection-menu .connection-right-icon {
+    display: inline-block;
+    font-size: 14px;
+    /*font-weight: bold;*/
+    padding: 3px;
+    margin-right: -4px;
+    transition: background 0.2s;
+  }
+  .connection-menu .connection-right-icon:hover {
+    /*color: #85878a;*/
+    background: #dcdee0;
+    border-radius: 3px;
   }
   .connection-menu .db-select {
     width: 100%;

@@ -38,7 +38,7 @@
 
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="cliContent.content=''">{{ $t('message.clean_up') }}</el-button>
-        <el-button @click="cliDialog.visible = false">{{ $t('el.messagebox.cancel') }}</el-button>
+        <el-button @click="cliDialog.visible = false">{{ $t('message.close') }}</el-button>
       </div>
     </el-dialog>
 </template>
@@ -55,6 +55,7 @@ export default {
       // inputSuggestionItems: new Set(),
       inputSuggestionItems: [],
       historyIndex: 0,
+      multiClient: null,
     };
   },
 
@@ -93,53 +94,66 @@ export default {
       return `${this.$t('message.redis_console')} [${consoleName}]`;
     },
     consoleExec() {
-      const { params } = this.cliContent;
-      const promise = rawCommand.exec(this, params);
+      let { params } = this.cliContent;
+      params = params.replace(/^\s+|\s+$/g, '');
 
-      this.cliContent.content += `> ${params}\n`;
       this.cliContent.params = '';
+      this.cliContent.content += `> ${params}\n`;
 
       // append to history command
       this.appendToHistory(params);
 
+      if (params == 'exit' || params == 'quit') {
+        this.cliDialog.visible = false;
+        return;
+      }
+
+      if (params == 'clear') {
+        this.cliContent.content = '';
+        return;
+      }
+
+      if (params === 'multi') {
+        this.multiClient = this.$util.get('client').multi();
+        this.cliContent.content += "OK\n";
+
+        this.scrollToBottom();
+
+        return;
+      }
+
+      const promise = rawCommand.exec(this.multiClient ? this.multiClient : this.$util.get('client'), params);
+
       if (!promise) {
         this.cliContent.content += '(error) ERR unknown command\n';
+        this.scrollToBottom();
 
-        this.$nextTick(() => {
-          this.scrollToBottom();
-        });
+        return;
+      }
+
+      if (params === 'exec') {
+        this.multiClient = null;
+      }
+
+      if (this.multiClient && (params !== 'exec')) {
+        this.cliContent.content += "QUEUED\n";
+        this.scrollToBottom();
 
         return;
       }
 
       promise.then((reply) => {
-        let append = '';
-
-        if (reply === null) {
-          append = `${null}\n`;
-        }
-        else if (typeof reply === 'object') {
-          const isArray = !isNaN(reply.length);
-
-          for (const i in reply) {
-            append += `${(isArray ? '' : (`${i}\n`)) + reply[i]}\n`;
-          }
-        }
-        else {
-          append = `${reply}\n`;
-        }
-
-        this.cliContent.content += append;
-
-        this.$nextTick(() => {
-          this.scrollToBottom();
-        });
+        this.cliContent.content += this.resolveResult(reply);
+        this.scrollToBottom();
       }).catch((err) => {
         this.cliContent.content += `${err.message}\n`;
-
-        this.$nextTick(() => {
-          this.scrollToBottom();
-        });
+        this.scrollToBottom();
+      });
+    },
+    scrollToBottom() {
+      this.$nextTick(() => {
+        const textarea = document.getElementById('cli-content');
+        textarea.scrollTop = textarea.scrollHeight;
       });
     },
     appendToHistory(params) {
@@ -155,6 +169,31 @@ export default {
 
       this.inputSuggestionItems = items;
       this.historyIndex = items.length;
+    },
+    resolveResult(result) {
+      let append = '';
+
+      if (result === null) {
+        append = `${null}\n`;
+      }
+      else if (typeof result === 'object') {
+        const isArray = !isNaN(result.length);
+
+        for (const i in result) {
+          if (typeof result[i] === 'object') {
+            append += this.resolveResult(result[i]);
+          }
+
+          else {
+            append += `${(isArray ? '' : (`${i}\n`)) + result[i]}\n`;
+          }
+        }
+      }
+      else {
+        append = `${result}\n`;
+      }
+
+      return append;
     },
     searchUp() {
       if (this.suggesttionShowing()) {
@@ -195,14 +234,11 @@ export default {
 
       return false;
     },
-    scrollToBottom() {
-      const textarea = document.getElementById('cli-content');
-      textarea.scrollTop = textarea.scrollHeight;
-    },
     openConsole() {
       this.$refs.cliParams.focus();
-      this.historyIndex = 0;
+      this.historyIndex = this.inputSuggestionItems.length;
 
+      this.initDefaultConnection();
       this.initCliContent();
     },
     closeConsole() {
@@ -234,19 +270,25 @@ export default {
       }
     },
     initCliContent() {
-      const { options } = this.$util.get('client');
+      const client = this.$util.get('client');
 
-      const content = `> ${options.host} connected!\n`;
-      this.cliContent.content += content;
+      if (!client || !client.options) {
+        return;
+      }
 
-      this.$nextTick(() => {
-        this.scrollToBottom();
-      });
+      this.cliContent.content += `> ${client.options.host} connected!\n`;
+      this.scrollToBottom();
+    },
+    keyUpFocus() {
+      this.$refs.cliParams && this.$refs.cliParams.focus();
     },
   },
-
   mounted() {
-    this.initDefaultConnection();
+    // this.initDefaultConnection();
+    // document.body.addEventListener('keyup', this.keyUpFocus);
+  },
+  destroyed() {
+    // document.body.removeEventListener('keyup', this.keyUpFocus);
   },
 };
 </script>
