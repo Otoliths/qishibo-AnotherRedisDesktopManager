@@ -1,6 +1,10 @@
+<img align="right" width="110" src="https://imgup.qii404.me/ardm_icon.png">
+
 # Another Redis DeskTop Manager
 
-> A faster, better and more stable redis desktop manager, compatible with Linux, windows, mac. What's more, it won't crash when loading a large number of keys.
+<hr/>
+
+> 🚀🚀🚀 A faster, better and more stable redis desktop manager, compatible with Linux, windows, mac. What's more, it won't crash when loading a large number of keys.
 
 [![MIT](https://img.shields.io/badge/license-MIT-000000.svg)](LICENSE)
 [![Release Page](https://img.shields.io/badge/Download-Release-blue.svg)](https://github.com/qishibo/AnotherRedisDesktopManager/releases)
@@ -22,17 +26,17 @@ Download latest `dmg` package from [release](https://github.com/qishibo/AnotherR
 
 > If **Mac** warning `Another Desktop Manager can't be opened because it is from an unidentified developer`. Open `Settings->Security` and click **`Open Anyway`**
 
-![can't be opened because it is from an unidentified developer](https://sinaimg.qii404.me/large/71405cably1g1o8ln36ksj20bp065jrv.jpg)
+![can't be opened because it is from an unidentified developer](https://imgup.qii404.me/blog/5d11c4fdf236b.jpg)
 
-![Settings->Security Open Anyway](https://sinaimg.qii404.me/large/71405cably1g1o8lmzh4zj20ii0f1wfx.jpg)
+![Settings->Security Open Anyway](https://imgup.qii404.me/blog/5d11c4feeaf6f.jpg)
 
 ## Enjoy!
 
-![redis status](https://sinaimg.qii404.me/large/71405cably1g3j24mfcorj20uy0lmq5v.jpg)
+![redis status](https://imgup.qii404.me/blog/5d11c50031d9c.jpg)
 
-![redis key hash](https://sinaimg.qii404.me/large/71405cably1g3j24mfao9j20uw0lntbd.jpg)
+![redis key hash](https://imgup.qii404.me/blog/5d11c501bdb52.jpg)
 
-![redis console](https://sinaimg.qii404.me/large/71405cably1g3j24mf3qjj20ux0lmdha.jpg)
+![redis console](https://imgup.qii404.me/blog/5d11c503cf26b.jpg)
 
 
 ## Feature Log
